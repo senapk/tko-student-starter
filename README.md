@@ -29,32 +29,6 @@ Se você quer começar em poucos minutos:
 3. Faça suas atividades normalmente.
 4. Execute `./git-sync.sh` para sincronizar suas alterações.
 
-## Onboarding em 30 segundos
-
-- Quer preparar o ambiente: rode `./setup.sh`.
-- Quer entender as opções do setup: rode `./setup.sh --help`.
-- Quer sincronizar com o repositório remoto: rode `./git-sync.sh`.
-- Quer ver ajuda do sync: rode `./git-sync.sh --help`.
-
-## Cola rápida (comandos essenciais)
-
-```bash
-# 1) Setup inicial
-./setup.sh
-
-# Ver ajuda do setup
-./setup.sh --help
-
-# 2) Desenvolvimento normal
-# (edite seus arquivos)
-
-# 3) Sincronizar com remoto
-./git-sync.sh
-
-# Ajuda do script de sincronização
-./git-sync.sh --help
-```
-
 ## Objetivo deste repositório
 
 - Servir como ponto de partida para atividades e avaliações com TKO.
@@ -63,20 +37,14 @@ Se você quer começar em poucos minutos:
 
 ## Estrutura profissional adicionada
 
-- `.editorconfig`: padroniza indentação, charset e finais de linha.
 - `.gitattributes`: força tratamento consistente de arquivos texto no Git.
 - `.gitignore`: evita commit de logs, artefatos temporários e diretórios locais.
-- `.github/workflows/validate.yml`: valida scripts e documentação automaticamente.
-- `.github/ISSUE_TEMPLATE/`: padroniza relato de bugs e sugestões de melhoria.
-- `.vscode/extensions.json`: recomenda extensões úteis para o curso.
 - `CONTRIBUTING.md`: orienta contribuições de monitores e mantenedores.
-- `docs/RELEASE_CHECKLIST.md`: organiza a manutenção e publicação do starter.
 
 ## Manutenção do starter
 
 - Para contribuir com melhorias no repositório, consulte `CONTRIBUTING.md`.
 - Para reportar bugs ou propor melhorias, use os templates em `.github/ISSUE_TEMPLATE/`.
-- Para preparar uma nova versão do starter, siga `docs/RELEASE_CHECKLIST.md`.
 
 ## Scripts principais
 
