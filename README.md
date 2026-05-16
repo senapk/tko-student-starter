@@ -9,23 +9,41 @@ Repositório base do aluno para uso com o TKO: https://github.com/senapk/tko.
 
 Este projeto foi preparado para uso em ambiente Git e possui dois scripts principais:
 
-- `setup.sh`: prepara o ambiente de desenvolvimento no Ubuntu/Codespaces (TKO, ferramentas e extensões).
+- `setup.sh`: prepara o ambiente de desenvolvimento no Ubuntu ou Codespaces, com execução manual pelo aluno.
 - `git-sync.sh`: padroniza o fluxo de sincronização do repositório do aluno (commit, pull/merge e push).
+
+## O que este starter resolve
+
+- Setup inicial do ambiente para uso com TKO.
+- Padronização de fluxo Git para alunos.
+- Uso orientado em Ubuntu e GitHub Codespaces, com setup manual e previsível.
+- Redução de erros comuns de configuração e sincronização.
+- Base pronta para ser expandida com linguagens e exercícios do curso.
 
 ## Início rápido
 
 Se você quer começar em poucos minutos:
 
-1. Abra o projeto no Codespaces (ou Ubuntu local).
+1. Abra o projeto no Codespaces ou em um Ubuntu local.
 2. Execute `./setup.sh` e escolha a opção desejada.
 3. Faça suas atividades normalmente.
 4. Execute `./git-sync.sh` para sincronizar suas alterações.
+
+## Onboarding em 30 segundos
+
+- Quer preparar o ambiente: rode `./setup.sh`.
+- Quer entender as opções do setup: rode `./setup.sh --help`.
+- Quer sincronizar com o repositório remoto: rode `./git-sync.sh`.
+- Quer ver ajuda do sync: rode `./git-sync.sh --help`.
 
 ## Cola rápida (comandos essenciais)
 
 ```bash
 # 1) Setup inicial
 ./setup.sh
+
+# Ver ajuda do setup
+./setup.sh --help
 
 # 2) Desenvolvimento normal
 # (edite seus arquivos)
@@ -43,6 +61,23 @@ Se você quer começar em poucos minutos:
 - Reduzir problemas de configuração inicial do ambiente.
 - Oferecer um fluxo Git guiado para estudantes.
 
+## Estrutura profissional adicionada
+
+- `.editorconfig`: padroniza indentação, charset e finais de linha.
+- `.gitattributes`: força tratamento consistente de arquivos texto no Git.
+- `.gitignore`: evita commit de logs, artefatos temporários e diretórios locais.
+- `.github/workflows/validate.yml`: valida scripts e documentação automaticamente.
+- `.github/ISSUE_TEMPLATE/`: padroniza relato de bugs e sugestões de melhoria.
+- `.vscode/extensions.json`: recomenda extensões úteis para o curso.
+- `CONTRIBUTING.md`: orienta contribuições de monitores e mantenedores.
+- `docs/RELEASE_CHECKLIST.md`: organiza a manutenção e publicação do starter.
+
+## Manutenção do starter
+
+- Para contribuir com melhorias no repositório, consulte `CONTRIBUTING.md`.
+- Para reportar bugs ou propor melhorias, use os templates em `.github/ISSUE_TEMPLATE/`.
+- Para preparar uma nova versão do starter, siga `docs/RELEASE_CHECKLIST.md`.
+
 ## Scripts principais
 
 ### `setup.sh` (Ubuntu/Codespaces)
@@ -58,6 +93,12 @@ Uso:
 
 ```bash
 ./setup.sh
+```
+
+Ajuda:
+
+```bash
+./setup.sh --help
 ```
 
 Quando usar:
@@ -113,17 +154,30 @@ Pré-requisitos mínimos:
 
 ## Setup no Codespaces
 
-No Codespaces (ou ambiente Ubuntu equivalente), use o script de setup:
+No Codespaces, o fluxo recomendado continua sendo manual, com o aluno executando o setup explicitamente.
+
+Fluxo recomendado:
 
 ```bash
 ./setup.sh
 ```
+
+Isso evita inicializações automáticas inesperadas e mantém o comportamento alinhado ao fluxo adotado também fora do Codespaces.
 
 ## Fluxo recomendado de trabalho
 
 1. Faça setup do ambiente com `./setup.sh`.
 2. Desenvolva suas atividades normalmente.
 3. Sincronize com o remoto usando `./git-sync.sh` ao finalizar uma etapa.
+
+## Fluxo do aluno
+
+1. Abra o repositório.
+2. Configure o ambiente com `./setup.sh`.
+3. Resolva a atividade no diretório do projeto.
+4. Revise suas alterações.
+5. Execute `./git-sync.sh`.
+6. Confirme no GitHub se o envio foi concluído.
 
 ## Checklist antes de sincronizar
 
@@ -138,6 +192,19 @@ No Codespaces (ou ambiente Ubuntu equivalente), use o script de setup:
 - Mantenha os campos do frontmatter no topo deste arquivo atualizados (`nomeAluno` e `matricula`).
 - Execute os scripts com permissão de execução (`chmod +x setup.sh git-sync.sh`) caso necessário.
 - Em caso de conflitos Git, o `git-sync.sh` oferece caminhos guiados de resolução.
+
+## Dúvidas frequentes
+
+- Preciso usar Codespaces?
+  - Não. O repositório funciona em Ubuntu local, desde que as dependências mínimas estejam instaladas.
+- O setup é automático ao abrir o repositório?
+  - Não. O fluxo oficial é manual, inclusive no Codespaces, para evitar comportamentos inesperados entre sistemas diferentes.
+- O `setup.sh` instala tudo de uma vez?
+  - Não. Ele é interativo e permite escolher o tipo de configuração desejada.
+- O `git-sync.sh` substitui o Git?
+  - Não. Ele apenas organiza e simplifica o fluxo mais comum de sincronização.
+- Posso trabalhar fora da branch `main`?
+  - O fluxo atual do script foi deliberadamente restringido à branch `main`.
 
 ## Solução de problemas comuns
 

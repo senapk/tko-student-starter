@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "github.vscode-github-actions",
+    "usernamehw.errorlens",
+    "bierner.markdown-preview-github-styles",
+    "tamasfe.even-better-toml",
+    "ms-python.python"
+  ]
+}

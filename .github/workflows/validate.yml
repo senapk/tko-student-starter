@@ -1,0 +1,31 @@
+name: Validate Starter
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check executable bits
+        run: |
+          test -x setup.sh
+          test -x git-sync.sh
+
+      - name: Validate shell scripts
+        run: |
+          bash -n setup.sh
+          bash -n git-sync.sh
+
+      - name: Validate README frontmatter
+        run: |
+          grep -q '^---$' README.md
+          grep -q '^nomeAluno:' README.md
+          grep -q '^matricula:' README.md

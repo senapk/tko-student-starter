@@ -56,6 +56,10 @@ init_logging() {
   ) 2>&1
 }
 
+show_log_hint() {
+  printf "%b\n" "${BLUE}Log desta execução:${RESET} $LOG_FILE"
+}
+
 trap 'printf "%b\n" "${RED}[ERRO]${RESET} Falha na linha $LINENO: $BASH_COMMAND"' ERR
 trap 'echo; printf "%b\n" "${YELLOW}[AVISO]${RESET} Operação cancelada pelo usuário."' INT
 
@@ -379,11 +383,13 @@ show_final_summary() {
   printf "%b\n" "${GREEN}✓${RESET} alterações enviadas"
 
   step "Log salvo em: $LOG_FILE"
+  printf "%b\n" "${BLUE}Se algo falhar em outra execução, consulte esse arquivo para depuração.${RESET}"
 }
 
 main() {
   parse_args "${1:-}"
   init_logging
+  trap 'printf "%b\n" "${RED}[ERRO]${RESET} Falha na linha $LINENO: $BASH_COMMAND"; show_log_hint' ERR
 
   printf "%b\n" "${BOLD}SYNC EDUCACIONAL GIT${RESET}"
 

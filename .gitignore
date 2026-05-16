@@ -1,0 +1,12 @@
+.git_logs/
+.vscode/*.log
+.vscode/settings.local.json
+node_modules/
+dist/
+build/
+coverage/
+.tmp/
+*.tmp
+*.swp
+*.swo
+.DS_Store
