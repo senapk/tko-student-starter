@@ -6,6 +6,9 @@ readonly GO_ARCH="linux-amd64"
 readonly GO_TAR="${GO_VERSION}.${GO_ARCH}.tar.gz"
 readonly GO_URL="https://go.dev/dl/${GO_TAR}"
 
+readonly GITSYNCURL="https://raw.githubusercontent.com/senapk/tko-student-starter/refs/heads/main/git-sync.sh"
+readonly SETUPSHURL="https://raw.githubusercontent.com/senapk/tko-student-starter/refs/heads/main/setup.sh"
+
 readonly RED='\033[31m'
 readonly GREEN='\033[32m'
 readonly YELLOW='\033[33m'
@@ -22,23 +25,6 @@ error() { printf "%b\n" "${RED}[ERRO]${RESET} $1"; }
 
 command_exists() { command -v "$1" >/dev/null 2>&1; }
 
-print_help() {
-    cat <<EOF
-Uso: ./setup.sh [opcao]
-
-Script de configuração do ambiente do aluno para uso com o TKO.
-
-Opcoes:
-  -h, --help    Mostra esta ajuda e sai
-
-Menu interativo:
-  1) TKO        Instala/atualiza o TKO e extensões básicas do VS Code
-  2) Python     Configura análise Python no workspace
-  3) TypeScript Instala TypeScript, esbuild e dependências de apoio
-  4) Golang     Instala Go no sistema e extensão do VS Code
-EOF
-}
-
 parse_args() {
     case "${1:-}" in
         "") ;;
@@ -52,23 +38,6 @@ parse_args() {
             exit 1
             ;;
     esac
-}
-
-validate_platform() {
-    step "Validando plataforma"
-
-    if [[ "$(uname -s)" != "Linux" ]]; then
-        error "Este script foi preparado para ambientes Linux/Ubuntu/Codespaces."
-        exit 1
-    fi
-
-    if [[ -f /etc/os-release ]]; then
-        if ! grep -qiE 'ubuntu|debian' /etc/os-release; then
-            warn "Ambiente não identificado como Ubuntu/Debian. O script pode funcionar parcialmente."
-        fi
-    fi
-
-    success "Plataforma compatível detectada"
 }
 
 ensure_path_export() {
@@ -116,12 +85,38 @@ install_global_npm() {
     npm install -g "$@"
 }
 
+ensure_python() {
+    # se estiver no windows, instalar via loja do windows
+    if [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* ]]; then
+        if command_exists python; then
+            return
+        fi
+        error "Python não encontrado. No windows, instale o Python pela loja do windows, depois 'python3 -m pip install --user pipx' e depois 'python3 -m pipx ensurepath'."
+    fi
+    
+    # se estiver no linux, instalar via apt ou verificar se já está instalado
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if command_exists python3; then
+            return
+        fi
+        if command_exists apt; then
+            step "Instalando Python via apt"
+            sudo apt update
+            sudo apt install -y python3 python3-pip
+            return
+        fi
+        error "Python não encontrado. Instale o Python 3 e pip usando o gerenciador de pacotes da sua distribuição (ex: apt para Debian/Ubuntu) ou baixe do site oficial."
+    fi
+    exit 1
+}
+
 ensure_pipx() {
     if command_exists pipx; then
         return
     fi
 
-    error "pipx não encontrado. Instale o pipx, execute 'pipx ensurepath' e reinicie o terminal."
+    error "pipx não encontrado. Instale o pipx e reinicie o terminal."
+    error "No windows, instale o Python pela loja do windows, depois 'python3 -m pip install --user pipx' e depois 'python3 -m pipx ensurepath'."
     exit 1
 }
 
@@ -136,9 +131,19 @@ ensure_sudo_for_go() {
     fi
 }
 
+ensure_tko() {
+    if pipx list | grep -qE 'package tko '; then
+        return
+    fi
+
+    setup_tko
+    exit 1
+}
+
 setup_tko() {
     step "Instalando/atualizando TKO"
 
+    ensure_python
     ensure_pipx
 
     if pipx list | grep -qE 'package tko '; then
@@ -157,13 +162,13 @@ setup_basic() {
         usernamehw.errorlens \
         bierner.markdown-preview-github-styles \
         tamasfe.even-better-toml \
-        editorconfig.editorconfig \
-        github.vscode-github-actions
+        editorconfig.editorconfig 
 
     success "Ambiente básico configurado"
 }
 
 setup_python() {
+    ensure_tko
     step "Configurando Python"
 
     write_if_missing ".vscode/settings.json" \
@@ -178,6 +183,7 @@ setup_python() {
 }
 
 setup_typescript() {
+    ensure_tko
     step "Configurando TypeScript"
 
     install_global_npm typescript esbuild
@@ -187,6 +193,7 @@ setup_typescript() {
 }
 
 setup_go() {
+    ensure_tko
     step "Instalando Go ${GO_VERSION}"
 
     local tmp="/tmp/${GO_TAR}"
@@ -215,39 +222,101 @@ setup_go() {
     success "Ambiente Go configurado"
 }
 
+update_scripts() {
+    step "Atualizando scripts"
+
+    if ! command_exists curl; then
+        error "curl não encontrado"
+        exit 1
+    fi
+
+    printf "%b\n" "${GREEN}-> Atualizando git-sync.sh${RESET}"
+    curl -fsSL "${GITSYNCURL}" -o git-sync.sh
+    chmod +x git-sync.sh
+
+    printf "%b\n" "${GREEN}-> Atualizando setup.sh${RESET}"
+    curl -fsSL "${SETUPSHURL}" -o setup.sh
+    chmod +x setup.sh
+
+    success "Scripts atualizados"
+}
+
+setup_java() {
+    ensure_tko
+    step "Configuração Java"
+    if ! command_exists apt; then
+        error "apt não encontrado. Configuração Java só é suportada em sistemas baseados em Debian/Ubuntu (incluindo WSL)."
+        return
+    fi
+    sudo apt update
+    sudo apt install -y openjdk-17-jdk
+    install_vscode_extensions vscjava.vscode-java-pack
+    success "Ambiente Java configurado"
+}
+
+
+setup_c() {
+    ensure_tko
+    step "Configuração C/C++"
+    if ! command_exists apt; then
+        error "apt não encontrado. Configuração C/C++ só é suportada em sistemas baseados em Debian/Ubuntu (incluindo WSL)."
+        return
+    fi
+    sudo apt update
+    sudo apt install -y build-essential gdb
+    install_vscode_extensions ms-vscode.cpptools
+    success "Ambiente C/C++ configurado"
+}
+
 show_menu() {
-    echo "========================================"
-    echo "   Setup de Ambiente de Desenvolvimento"
-    echo "========================================"
-    echo
-    echo "1) TKO (Instalar / Atualizar)"
-    echo "2) Python"
-    echo "3) TypeScript"
-    echo "4) Golang"
+    cat <<EOF
+========================================
+  Setup de Ambiente de Desenvolvimento
+========================================
+
+Digite o número dos elementos que deseja instalar/atualizar:
+
+  1) scripts    Atualiza git-sync.sh e setup.sh scripts (via curl)
+  2) tko        Instala/atualiza o TKO (via pipx)
+  3) code       Extensões básicas do VS Code (Error Lens, Markdown Styles, EditorConfig, etc.)
+  4) python     Configura análise Python no workspace (via settings.json e extensão do VS Code)
+  5) typescript Instala TypeScript, esbuild e dependências de apoio (via npm)
+  6) go         Instala Go no sistema e extensão do VS Code (LINUX/WSL)
+  7) java       Configura ambiente Java (via apt/WSL)
+  8) c          Configura ambiente C/C++(via apt/WSL)
+EOF
 }
 
 main() {
-    parse_args "${1:-}"
-    validate_platform
-
     show_menu
 
     local choice
-    read -rp "Escolha [1-4]: " choice
+    read -rp "Escolha [1-8]: " choice
 
     case "$choice" in
         1)
-            setup_tko
-            setup_basic
+            update_scripts
             ;;
         2)
-            setup_python
+            setup_tko
             ;;
         3)
-            setup_typescript
+            setup_basic
             ;;
         4)
+            setup_python
+            ;;
+        5)
+            setup_typescript
+            ;;
+        6)
             setup_go
+            ;;
+        7)
+            setup_java
+            ;;
+        8)
+            setup_c
             ;;
         *)
             error "Opção inválida"
