@@ -131,13 +131,13 @@ ensure_sudo_for_go() {
     fi
 }
 
-ensure_tko() {
+ensure_basic() {
     if pipx list | grep -qE 'package tko '; then
         return
     fi
 
     setup_tko
-    exit 1
+    setup_basic
 }
 
 setup_tko() {
@@ -168,7 +168,8 @@ setup_basic() {
 }
 
 setup_python() {
-    ensure_tko
+    ensure_basic
+    ensure_python
     step "Configurando Python"
 
     write_if_missing ".vscode/settings.json" \
@@ -183,7 +184,7 @@ setup_python() {
 }
 
 setup_typescript() {
-    ensure_tko
+    ensure_basic
     step "Configurando TypeScript"
 
     install_global_npm typescript esbuild
@@ -193,7 +194,7 @@ setup_typescript() {
 }
 
 setup_go() {
-    ensure_tko
+    ensure_basic
     step "Instalando Go ${GO_VERSION}"
 
     local tmp="/tmp/${GO_TAR}"
@@ -242,7 +243,7 @@ update_scripts() {
 }
 
 setup_java() {
-    ensure_tko
+    ensure_basic
     step "Configuração Java"
     if ! command_exists apt; then
         error "apt não encontrado. Configuração Java só é suportada em sistemas baseados em Debian/Ubuntu (incluindo WSL)."
@@ -256,7 +257,7 @@ setup_java() {
 
 
 setup_c() {
-    ensure_tko
+    ensure_basic
     step "Configuração C/C++"
     if ! command_exists apt; then
         error "apt não encontrado. Configuração C/C++ só é suportada em sistemas baseados em Debian/Ubuntu (incluindo WSL)."
@@ -269,42 +270,41 @@ setup_c() {
 }
 
 show_menu() {
-    cat <<EOF
-========================================
-  Setup de Ambiente de Desenvolvimento
-========================================
 
-Digite o número dos elementos que deseja instalar/atualizar:
-
-  1) scripts    Atualiza git-sync.sh e setup.sh scripts (via curl)
-  2) tko        Instala/atualiza o TKO (via pipx)
-  3) code       Extensões básicas do VS Code (Error Lens, Markdown Styles, EditorConfig, etc.)
-  4) python     Configura análise Python no workspace (via settings.json e extensão do VS Code)
-  5) typescript Instala TypeScript, esbuild e dependências de apoio (via npm)
-  6) go         Instala Go no sistema e extensão do VS Code (LINUX/WSL)
-  7) java       Configura ambiente Java (via apt/WSL)
-  8) c          Configura ambiente C/C++(via apt/WSL)
-EOF
+    printf "\n========================================"
+    printf "\n  Setup de Ambiente de Desenvolvimento"
+    printf "\n========================================"
+    printf "\n"
+    printf "\nDigite o número do elemento que deseja instalar/atualizar:"
+    printf "\n"
+    printf "\n  1) ${GREEN}tko        ${RESET}Instala/atualiza o TKO (via pipx)"
+    printf "\n  2) ${GREEN}scripts    ${RESET}Atualiza git-sync.sh e setup.sh scripts (via curl)"
+    printf "\n  3) ${GREEN}python     ${RESET}Configura análise Python no workspace (via settings.json e extensão do VS Code)"
+    printf "\n  4) ${GREEN}c          ${RESET}Configura ambiente C/C++(via apt/WSL)"
+    printf "\n  5) ${GREEN}typescript ${RESET}Instala TypeScript, esbuild e dependências de apoio (via npm)"
+    printf "\n  6) ${GREEN}go         ${RESET}Instala Go no sistema e extensão do VS Code (LINUX/WSL)"
+    printf "\n  7) ${GREEN}java       ${RESET}Configura ambiente Java (via apt/WSL)"
+    printf "\n"
 }
 
 main() {
     show_menu
 
     local choice
-    read -rp "Escolha [1-8]: " choice
+    read -rp "Escolha [1-7]: " choice
 
     case "$choice" in
         1)
-            update_scripts
-            ;;
-        2)
             setup_tko
             ;;
+        2)
+            update_scripts
+            ;;
         3)
-            setup_basic
+            setup_python
             ;;
         4)
-            setup_python
+            setup_c
             ;;
         5)
             setup_typescript
@@ -314,9 +314,6 @@ main() {
             ;;
         7)
             setup_java
-            ;;
-        8)
-            setup_c
             ;;
         *)
             error "Opção inválida"
