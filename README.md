@@ -1,6 +1,6 @@
 ---
 nomeAluno: "Seu nome completo"
-matricula: "Digite sua matrícula aqui por obséquio"
+matricula: "Digite sua matrícula - teste de conflito"
 ---
 
 # TKO Student Starter
