@@ -144,6 +144,7 @@ class GitRepository:
         check: bool = True,
         capture_output: bool = False,
         color: bool = False,
+        echo: bool = True
     ) -> subprocess.CompletedProcess[str]:
         command = [
             self.executable,
@@ -170,7 +171,7 @@ class GitRepository:
             check=False,
         )
 
-        if capture_output:
+        if capture_output and echo:
             if result.stdout:
                 self.console.write(
                     result.stdout.rstrip()
@@ -201,10 +202,11 @@ class GitRepository:
 
         return result
 
-    def output(self, *args: str) -> str:
+    def output(self, *args: str, echo: bool=True) -> str:
         result = self.run(
             *args,
             capture_output=True,
+            echo=echo
         )
 
         return result.stdout.strip()
@@ -213,6 +215,8 @@ class GitRepository:
         result = self.run(
             *args,
             check=False,
+            echo=False,
+            capture_output=True
         )
 
         return result.returncode == 0
@@ -263,11 +267,12 @@ class GitRepository:
             "MERGE_HEAD",
         )
 
-    def conflicted_files(self) -> list[str]:
+    def conflicted_files(self, echo: bool = True) -> list[str]:
         output = self.output(
             "diff",
             "--name-only",
             "--diff-filter=U",
+            echo=echo
         )
 
         return [
@@ -278,7 +283,7 @@ class GitRepository:
 
     def has_conflicts(self) -> bool:
         return bool(
-            self.conflicted_files()
+            self.conflicted_files(echo=False)
         )
 
     def finish_merge(self) -> None:
@@ -539,11 +544,7 @@ class SyncApplication:
     # Merge pendente
     # --------------------------------------------------------
 
-    def show_unresolved_conflicts(self) -> None:
-        conflicts = (
-            self.repository.conflicted_files()
-        )
-
+    def show_unresolved_conflicts(self, conflicts: list[str]) -> None:
         if not conflicts:
             return
 
@@ -563,9 +564,15 @@ class SyncApplication:
 
         self.console.write("")
 
-        self.console.warn(
-            "Resolva os conflitos manualmente "
-            "e execute o programa novamente."
+        self.console.write(
+            f"{YELLOW}[AVISO]{RESET} Resolva os conflitos:\n"
+            f"Opção 1: Editar cada arquivo, remover os marcadores de conflito e depois executar\n"
+            f"    {GREEN}git add -A && git commit --no-edit{RESET}\n"
+            f"Opção 2: MANTER    as versões locais e DESCARTAR as remotas:\n"
+            f"    {GREEN}git checkout --ours -- . && git add -A && git commit --no-edit{RESET}\n"
+            f"Opção 3: DESCARTAR as versões locais e MANTER    as remotas:\n"
+            f"    {GREEN}git checkout --theirs -- . && git add -A && git commit --no-edit{RESET}\n"
+            f"Após isso, rode o script novamente\n"
         )
 
     def handle_pending_merge(self) -> None:
@@ -582,16 +589,16 @@ class SyncApplication:
         if not self.repository.is_merge_in_progress():
             return
 
-        self.console.step(
-            "Merge pendente detectado"
-        )
+        # self.console.step(
+        #     "Merge pendente detectado"
+        # )
 
         conflicts = (
             self.repository.conflicted_files()
         )
 
         if conflicts:
-            self.show_unresolved_conflicts()
+            self.show_unresolved_conflicts(conflicts)
             raise UserCancelled
 
         self.console.success(
@@ -782,9 +789,9 @@ class SyncApplication:
                 "Atualizações recebidas"
             )
             return
-
-        if self.repository.has_conflicts():
-            self.show_unresolved_conflicts()
+        conflicts = self.repository.conflicted_files()
+        if conflicts:
+            self.show_unresolved_conflicts(conflicts)
 
             raise UserCancelled
 
