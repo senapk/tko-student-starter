@@ -385,10 +385,24 @@ class GitRepository:
             "--quiet",
         )
 
+    def has_untracked_files(self) -> bool:
+        output = self.output(
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+            echo=False,
+        )
+
+        return any(
+            line.startswith("??")
+            for line in output.splitlines()
+        )
+
     def has_local_changes(self) -> bool:
         return (
             self.has_unstaged_changes()
             or self.has_staged_changes()
+            or self.has_untracked_files()
         )
 
     def status(self) -> None:
