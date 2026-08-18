@@ -6,7 +6,7 @@ readonly GO_ARCH="linux-amd64"
 readonly GO_TAR="${GO_VERSION}.${GO_ARCH}.tar.gz"
 readonly GO_URL="https://go.dev/dl/${GO_TAR}"
 
-readonly GITSYNCURL="https://raw.githubusercontent.com/senapk/tko-student-starter/refs/heads/main/git-sync.sh"
+readonly GITSYNCURL="https://raw.githubusercontent.com/senapk/tko-student-starter/refs/heads/main/git-sync.py"
 readonly SETUPSHURL="https://raw.githubusercontent.com/senapk/tko-student-starter/refs/heads/main/setup.sh"
 
 readonly RED='\033[31m'
@@ -231,9 +231,10 @@ update_scripts() {
         exit 1
     fi
 
-    printf "%b\n" "${GREEN}-> Atualizando git-sync.sh${RESET}"
-    curl -fsSL "${GITSYNCURL}" -o git-sync.sh
-    chmod +x git-sync.sh
+
+    printf "%b\n" "${GREEN}-> Atualizando git-sync.py${RESET}"
+    curl -fsSL "${GITSYNCURL}" -o git-sync.py
+    chmod +x git-sync.py
 
     printf "%b\n" "${GREEN}-> Atualizando setup.sh${RESET}"
     curl -fsSL "${SETUPSHURL}" -o setup.sh
@@ -278,7 +279,7 @@ show_menu() {
     printf "\nDigite o número do elemento que deseja instalar/atualizar:"
     printf "\n"
     printf "\n  1) ${GREEN}tko        ${RESET}Instala/atualiza o TKO (via pipx)"
-    printf "\n  2) ${GREEN}scripts    ${RESET}Atualiza git-sync.sh e setup.sh scripts (via curl)"
+    printf "\n  2) ${GREEN}scripts    ${RESET}Atualiza git-sync.py e setup.sh scripts (via curl)"
     printf "\n  3) ${GREEN}python     ${RESET}Configura análise Python no workspace (via settings.json e extensão do VS Code)"
     printf "\n  4) ${GREEN}c          ${RESET}Configura ambiente C/C++(via apt/WSL)"
     printf "\n  5) ${GREEN}typescript ${RESET}Instala TypeScript, esbuild e dependências de apoio (via npm)"

@@ -12,7 +12,7 @@ Este projeto foi preparado para uso em ambiente Git e possui dois scripts princi
 - `setup.sh`: prepara o ambiente de desenvolvimento no Ubuntu ou Codespaces, com execução manual pelo aluno.
 - `git-sync.sh`: padroniza o fluxo de sincronização do repositório do aluno (commit, pull/merge e push).
 
-## O que este starter resolve <!-- @o-que-este-starter-resolve deps=none factor=1 xpgoal=0 active=1 -->
+## O que este starter resolve
 
 - Setup inicial do ambiente para uso com TKO.
 - Padronização de fluxo Git para alunos.
@@ -20,7 +20,7 @@ Este projeto foi preparado para uso em ambiente Git e possui dois scripts princi
 - Redução de erros comuns de configuração e sincronização.
 - Base pronta para ser expandida com linguagens e exercícios do curso.
 
-## Início rápido <!-- @início-rápido deps=none factor=1 xpgoal=0 active=1 -->
+## Início rápido
 
 Se você quer começar em poucos minutos:
 
@@ -29,26 +29,26 @@ Se você quer começar em poucos minutos:
 3. Faça suas atividades normalmente.
 4. Execute `./git-sync.sh` para sincronizar suas alterações.
 
-## Objetivo deste repositório <!-- @objetivo-deste-repositório deps=none factor=1 xpgoal=0 active=1 -->
+## Objetivo deste repositório 
 
 - Servir como ponto de partida para atividades e avaliações com TKO.
 - Reduzir problemas de configuração inicial do ambiente.
 - Oferecer um fluxo Git guiado para estudantes.
 
-## Estrutura profissional adicionada <!-- @estrutura-profissional-adicionada deps=none factor=1 xpgoal=0 active=1 -->
+## Estrutura profissional adicionada 
 
 - `.gitattributes`: força tratamento consistente de arquivos texto no Git.
 - `.gitignore`: evita commit de logs, artefatos temporários e diretórios locais.
 - `CONTRIBUTING.md`: orienta contribuições de monitores e mantenedores.
 
-## Manutenção do starter <!-- @manutenção-do-starter deps=none factor=1 xpgoal=0 active=1 -->
+## Manutenção do starter
 
 - Para contribuir com melhorias no repositório, consulte `CONTRIBUTING.md`.
 - Para reportar bugs ou propor melhorias, use os templates em `.github/ISSUE_TEMPLATE/`.
 
-## Scripts principais <!-- @scripts-principais deps=none factor=1 xpgoal=0 active=1 -->
+## Scripts principais
 
-## setup.sh (Ubuntu/Codespaces) <!-- @setupsh-ubuntucodespaces deps=none factor=1 xpgoal=0 active=1 -->
+## setup.sh (Ubuntu/Codespaces)
 
 Script interativo para configurar o ambiente. Ao executar, você escolhe uma opção de setup:
 
@@ -101,7 +101,65 @@ Quando usar:
 - Antes de encerrar uma sessão de trabalho.
 - Sempre que quiser reduzir risco de divergência com o remoto.
 
-## Setup local (máquina própria) <!-- @setup-local-máquina-própria deps=none factor=1 xpgoal=0 active=1 -->
+
+```txt
+                         INÍCIO
+                            │
+                            ▼
+                 É um repositório Git?
+                            │
+                            ▼
+                 Existem conflitos U?
+                    /               \
+                  SIM               NÃO
+                   │                 │
+                   ▼                 ▼
+             Lista arquivos      continua
+                   │                 │
+                   ▼                 ▼
+                ENCERRA       fetch origin
+                                     │
+                                     ▼
+                            Há alterações remotas?
+                              /              \
+                            NÃO              SIM
+                             │                │
+                             ▼                ▼
+                          continua       confirmação
+                                              │
+                                              ▼
+                                      tenta fast-forward
+                                        /           \
+                                      OK            falha
+                                       │              │
+                                       ▼              ▼
+                                   continua      tenta merge
+                                                     │
+                                             ┌───────┴───────┐
+                                             │               │
+                                           OK              conflito
+                                             │               │
+                                             ▼               ▼
+                                          continua       1 / 2 / 3
+                                                           │
+                              ┌────────────────┬────────────┤
+                              │                │            │
+                           LOCAL           REMOTO       MANUAL
+                              │                │            │
+                              ▼                ▼            ▼
+                          checkout         checkout      lista
+                           --ours          --theirs      arquivos
+                              │                │            │
+                              └───────┬────────┘            ▼
+                                      │                  ENCERRA
+                                      ▼
+                                    commit
+                                      │
+                                      ▼
+                                    push
+``` 
+
+## Setup local (máquina própria)
 
 Pré-requisitos mínimos:
 
@@ -120,7 +178,7 @@ Pré-requisitos mínimos:
   - Instale o TKO:
     - `pipx install tko`
 
-## Setup no Codespaces <!-- @setup-no-codespaces deps=none factor=1 xpgoal=0 active=1 -->
+## Setup no Codespaces
 
 No Codespaces, o fluxo recomendado continua sendo manual, com o aluno executando o setup explicitamente.
 
@@ -132,13 +190,13 @@ Fluxo recomendado:
 
 Isso evita inicializações automáticas inesperadas e mantém o comportamento alinhado ao fluxo adotado também fora do Codespaces.
 
-## Fluxo recomendado de trabalho <!-- @fluxo-recomendado-de-trabalho deps=none factor=1 xpgoal=0 active=1 -->
+## Fluxo recomendado de trabalho
 
 1. Faça setup do ambiente com `./setup.sh`.
 2. Desenvolva suas atividades normalmente.
 3. Sincronize com o remoto usando `./git-sync.sh` ao finalizar uma etapa.
 
-## Fluxo do aluno <!-- @fluxo-do-aluno deps=none factor=1 xpgoal=0 active=1 -->
+## Fluxo do aluno
 
 1. Abra o repositório.
 2. Configure o ambiente com `./setup.sh`.
@@ -147,7 +205,7 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 5. Execute `./git-sync.sh`.
 6. Confirme no GitHub se o envio foi concluído.
 
-## Checklist antes de sincronizar <!-- @checklist-antes-de-sincronizar deps=none factor=1 xpgoal=0 active=1 -->
+## Checklist antes de sincronizar
 
 1. Rode e valide seus testes locais (quando existirem).
 2. Revise os arquivos alterados e remova artefatos temporários.
@@ -155,13 +213,13 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 4. Execute `./git-sync.sh`.
 5. Verifique no GitHub se o commit foi enviado corretamente.
 
-## Observações <!-- @observações deps=none factor=1 xpgoal=0 active=1 -->
+## Observações
 
 - Mantenha os campos do frontmatter no topo deste arquivo atualizados (`nomeAluno` e `matricula`).
 - Execute os scripts com permissão de execução (`chmod +x setup.sh git-sync.sh`) caso necessário.
 - Em caso de conflitos Git, o `git-sync.sh` oferece caminhos guiados de resolução.
 
-## Dúvidas frequentes <!-- @dúvidas-frequentes deps=none factor=1 xpgoal=0 active=1 -->
+## Dúvidas frequentes
 
 - Preciso usar Codespaces?
   - Não. O repositório funciona em Ubuntu local, desde que as dependências mínimas estejam instaladas.
@@ -174,7 +232,7 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 - Posso trabalhar fora da branch `main`?
   - O fluxo atual do script foi deliberadamente restringido à branch `main`.
 
-## Solução de problemas comuns <!-- @solução-de-problemas-comuns deps=none factor=1 xpgoal=0 active=1 -->
+## Solução de problemas comuns 
 
 - Erro de permissão ao executar script:
   - Rode `chmod +x setup.sh git-sync.sh` e tente novamente.
@@ -184,5 +242,3 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
   - O fluxo é intencionalmente restrito à branch `main`.
 - Falha de autenticação com GitHub:
   - Revise chave SSH, `origin` do repositório e permissões de acesso.
-## sandbox <!-- @sandbox deps=none factor=1 xpgoal=0 active=1 -->
-- [ ] `@user_001 🛠️ 👤 type=make xp=1 tier=1 loss=part :self` [ovo](base/user_001/README.md)
