@@ -83,7 +83,7 @@ Principais responsabilidades:
 
 - Valida se você está em um repositório Git válido e na branch permitida (`main`).
 - Verifica e configura identidade Git (`user.name` e `user.email`) quando necessário.
-- Detecta alterações locais e oferece commit guiado com mensagem obrigatória.
+- Detecta alterações locais e oferece commit guiado.
 - Busca atualizações do remoto (`origin`) e tenta aplicar `fast-forward` primeiro.
 - Se necessário, realiza merge e auxilia na resolução de conflitos.
 - Envia commits locais para o repositório remoto.
@@ -97,6 +97,7 @@ Uso:
 
 Quando usar:
 
+- Ao iniciar uma atividade em um novo repositório local.
 - Ao terminar uma atividade ou etapa de implementação.
 - Antes de encerrar uma sessão de trabalho.
 - Sempre que quiser reduzir risco de divergência com o remoto.
