@@ -42,6 +42,10 @@ class UserCancelled(Exception):
     """Operação cancelada pelo usuário."""
 
 
+class MergeCompleted(Exception):
+    """Merge pendente foi finalizado; o fluxo deve terminar."""
+
+
 # ============================================================
 # Console
 # ============================================================
@@ -120,12 +124,7 @@ class Console:
 
 
 class GitRepository:
-    """
-    Abstração sobre o repositório Git.
-
-    Esta classe concentra todas as chamadas ao executável
-    git. A lógica do fluxo da aplicação fica em SyncApplication.
-    """
+    """Abstração sobre o repositório Git."""
 
     def __init__(
         self,
@@ -153,7 +152,6 @@ class GitRepository:
         ]
 
         display_command = " ".join(command)
-
         self.console.command(display_command)
 
         if color:
@@ -283,6 +281,10 @@ class GitRepository:
             self.conflicted_files()
         )
 
+    def finish_merge(self) -> None:
+        self.run("add", "-A")
+        self.run("commit", "--no-edit")
+
     # --------------------------------------------------------
     # Alterações
     # --------------------------------------------------------
@@ -334,48 +336,6 @@ class GitRepository:
             "commit",
             "-m",
             message,
-        )
-
-    def commit_merge(self) -> None:
-        self.run(
-            "commit",
-            "--no-edit",
-        )
-
-    # --------------------------------------------------------
-    # Resolução de conflitos
-    # --------------------------------------------------------
-
-    def checkout_ours(
-        self,
-        file: str,
-    ) -> None:
-        self.run(
-            "checkout",
-            "--ours",
-            "--",
-            file,
-        )
-
-        self.run(
-            "add",
-            file,
-        )
-
-    def checkout_theirs(
-        self,
-        file: str,
-    ) -> None:
-        self.run(
-            "checkout",
-            "--theirs",
-            "--",
-            file,
-        )
-
-        self.run(
-            "add",
-            file,
         )
 
     # --------------------------------------------------------
@@ -440,25 +400,6 @@ class GitRepository:
         )
 
         return result.returncode == 0
-
-    def contains_remote_branch(
-        self,
-        branch: str,
-        remote: str = REMOTE,
-    ) -> bool:
-        """
-        Verifica se o HEAD local contém o commit apontado
-        atualmente pelo remote-tracking branch.
-
-        Isso garante que um push normal não tente enviar
-        uma história que ainda esteja atrás do servidor.
-        """
-        return self.succeeds(
-            "merge-base",
-            "--is-ancestor",
-            f"{remote}/{branch}",
-            "HEAD",
-        )
 
     # --------------------------------------------------------
     # Push
@@ -595,7 +536,7 @@ class SyncApplication:
         return branch
 
     # --------------------------------------------------------
-    # Conflitos pendentes
+    # Merge pendente
     # --------------------------------------------------------
 
     def show_unresolved_conflicts(self) -> None:
@@ -623,25 +564,52 @@ class SyncApplication:
         self.console.write("")
 
         self.console.warn(
-            "Resolva os conflitos nos arquivos "
-            "acima e execute o programa novamente."
+            "Resolva os conflitos manualmente "
+            "e execute o programa novamente."
         )
 
-    def check_pending_conflicts(self) -> None:
+    def handle_pending_merge(self) -> None:
         """
-        Conflitos existentes no início do programa
-        nunca são resolvidos automaticamente.
+        Trata um merge iniciado anteriormente.
 
-        O aluno deve resolvê-los manualmente e
-        executar novamente o programa.
+        Se ainda houver conflitos, apenas informa os arquivos
+        e encerra.
+
+        Se não houver conflitos, finaliza o merge e encerra
+        o programa. O push será feito na próxima execução.
         """
 
-        if not self.repository.has_conflicts():
+        if not self.repository.is_merge_in_progress():
             return
 
-        self.show_unresolved_conflicts()
+        self.console.step(
+            "Merge pendente detectado"
+        )
 
-        raise UserCancelled
+        conflicts = (
+            self.repository.conflicted_files()
+        )
+
+        if conflicts:
+            self.show_unresolved_conflicts()
+            raise UserCancelled
+
+        self.console.success(
+            "Nenhum conflito pendente."
+        )
+
+        self.repository.finish_merge()
+
+        self.console.success(
+            "Merge finalizado."
+        )
+
+        self.console.warn(
+            "Execute o programa novamente para "
+            "continuar a sincronização."
+        )
+
+        raise MergeCompleted
 
     # --------------------------------------------------------
     # Identidade
@@ -765,133 +733,6 @@ class SyncApplication:
         )
 
     # --------------------------------------------------------
-    # Resolução de conflitos recém-criados
-    # --------------------------------------------------------
-
-    def resolve_merge_conflicts(self) -> None:
-        """
-        Resolve conflitos que acabaram de ser criados
-        pelo merge executado nesta execução.
-        """
-
-        self.console.step(
-            "Conflitos detectados"
-        )
-
-        conflicts = (
-            self.repository.conflicted_files()
-        )
-
-        for file in conflicts:
-            self.console.write(
-                f"Arquivo em conflito: {file}"
-            )
-
-            self.console.write(
-                "1) Manter MINHA versão"
-            )
-            self.console.write(
-                "2) Manter versão do SERVIDOR"
-            )
-            self.console.write(
-                "3) Resolver manualmente"
-            )
-
-            choice = self.console.ask(
-                "> "
-            ).strip()
-
-            if choice == "1":
-                self.repository.checkout_ours(
-                    file
-                )
-
-            elif choice == "2":
-                self.repository.checkout_theirs(
-                    file
-                )
-
-            elif choice == "3":
-                self.console.write("")
-
-                self.console.warn(
-                    "Resolva manualmente os conflitos "
-                    "nos arquivos abaixo:"
-                )
-
-                for conflict in conflicts:
-                    self.console.write(
-                        f"  - {conflict}"
-                    )
-
-                self.console.write("")
-
-                self.console.warn(
-                    "Depois de corrigir os arquivos, "
-                    "execute o programa novamente."
-                )
-
-                raise UserCancelled
-
-            else:
-                self.console.warn(
-                    "Opção inválida."
-                )
-
-                raise UserCancelled
-
-        if self.repository.has_conflicts():
-            raise GitError(
-                "Ainda existem conflitos "
-                "não resolvidos."
-            )
-
-        # Garante que qualquer alteração resolvida
-        # esteja no índice antes de concluir o merge.
-        self.repository.stage_all()
-
-        if self.repository.has_staged_changes():
-            self.repository.commit_merge()
-
-        self.console.success(
-            "Conflitos resolvidos"
-        )
-
-    # --------------------------------------------------------
-    # Merge pendente
-    # --------------------------------------------------------
-
-    def handle_pending_merge(self) -> None:
-        """
-        Finaliza um merge iniciado anteriormente,
-        desde que os conflitos já tenham sido
-        resolvidos manualmente.
-
-        Normalmente conflitos pendentes já foram
-        detectados por check_pending_conflicts().
-        """
-
-        if not self.repository.is_merge_in_progress():
-            return
-
-        self.console.step(
-            "Merge pendente detectado"
-        )
-
-        if self.repository.has_conflicts():
-            self.show_unresolved_conflicts()
-            raise UserCancelled
-
-        self.repository.stage_all()
-
-        if self.repository.has_staged_changes():
-            self.repository.commit_merge()
-
-        self.console.success(
-            "Merge pendente finalizado"
-        )
-
-    # --------------------------------------------------------
     # Sincronização
     # --------------------------------------------------------
 
@@ -913,16 +754,14 @@ class SyncApplication:
             )
             return
 
-        if not self.console.confirm(
-            "Deseja continuar?"
-        ):
-            raise UserCancelled
+        self.console.warn(
+            "Existem atualizações no servidor."
+        )
 
         remote_branch = (
             f"{REMOTE}/{branch}"
         )
 
-        # Primeiro tenta uma atualização sem merge.
         if self.repository.merge_fast_forward(
             remote_branch
         ):
@@ -936,7 +775,6 @@ class SyncApplication:
             "Tentando merge."
         )
 
-        # Agora pode ocorrer conflito.
         if self.repository.merge(
             remote_branch
         ):
@@ -945,10 +783,10 @@ class SyncApplication:
             )
             return
 
-        # O conflito foi criado nesta execução.
         if self.repository.has_conflicts():
-            self.resolve_merge_conflicts()
-            return
+            self.show_unresolved_conflicts()
+
+            raise UserCancelled
 
         raise GitError(
             "Erro ao atualizar repositório."
@@ -971,20 +809,6 @@ class SyncApplication:
                 "Nenhum commit novo para enviar"
             )
             return
-
-        # O remote-tracking branch foi atualizado pelo
-        # fetch realizado nesta execução. Se ele ainda não
-        # for ancestral de HEAD, não podemos fazer push
-        # sem uma nova sincronização.
-        if not self.repository.contains_remote_branch(
-            branch
-        ):
-            raise GitError(
-                "O repositório local ainda não contém "
-                "todas as alterações do servidor. "
-                "Execute o programa novamente para "
-                "sincronizar as alterações."
-            )
 
         self.repository.push(branch)
 
@@ -1027,34 +851,31 @@ class SyncApplication:
             f"{BOLD}SYNC EDUCACIONAL GIT{RESET}"
         )
 
-        # 1. Ambiente
+        # 1. Validar ambiente.
         self.validate_environment()
         self.validate_remote()
 
-        # 2. Não iniciar operações se já houver
-        #    conflitos pendentes.
-        self.check_pending_conflicts()
+        # 2. Se houver merge pendente, ele precisa ser
+        #    resolvido antes de qualquer outra operação.
+        self.handle_pending_merge()
 
-        # 3. Configuração
+        # 3. Configuração.
         self.setup_git_identity()
 
         branch = self.validate_branch()
 
         self.show_status()
 
-        # 4. Finalizar merge previamente resolvido.
-        self.handle_pending_merge()
-
-        # 5. Salvar alterações locais.
+        # 4. Salvar alterações locais.
         self.commit_local_changes()
 
-        # 6. Atualizar a partir do servidor.
+        # 5. Atualizar a partir do servidor.
         self.sync_with_remote(branch)
 
-        # 7. Enviar alterações.
+        # 6. Enviar alterações.
         self.push_changes(branch)
 
-        # 8. Finalização.
+        # 7. Finalização.
         self.show_final_summary()
 
         self.console.write(
@@ -1116,9 +937,12 @@ def main() -> int:
     try:
         application.run()
 
+    except MergeCompleted:
+        return 0
+
     except UserCancelled:
         application.console.warn(
-            "Operação cancelada."
+            "Operação encerrada."
         )
         return 0
 
