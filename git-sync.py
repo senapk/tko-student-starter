@@ -180,7 +180,7 @@ class GitRepository:
                 )
 
         if check and result.returncode != 0:
-            stderr = result.stderr.strip()
+            stderr = result.stderr.strip() if result.stderr else None
 
             if stderr:
                 raise GitError(
