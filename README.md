@@ -1,5 +1,5 @@
 ---
-nomeAluno: "Seu nome completo - local"
+nomeAluno: "Seu nome completo"
 matricula: "Digite sua matrícula"
 ---
 

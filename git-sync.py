@@ -650,7 +650,7 @@ class SyncApplication:
             f"Opção 3: DESCARTAR as versões locais e MANTER    as remotas:\n"
             f"    {GREEN}git checkout --theirs -- .{RESET}\n"
             "Após resolver os conflitos, rode o script novamente. "
-            "Ele fará o git add -A e finalizará o merge automaticamente.\n"
+            "Ele finalizará o merge automaticamente.\n"
         )
 
     def handle_pending_merge(self) -> None:
@@ -670,6 +670,8 @@ class SyncApplication:
         # self.console.step(
         #     "Merge pendente detectado"
         # )
+
+        self.repository.stage_all()
 
         conflicts = (
             self.repository.conflicted_files()
