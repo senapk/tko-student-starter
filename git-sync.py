@@ -281,13 +281,87 @@ class GitRepository:
             if file.strip()
         ]
 
-    def has_conflicts(self) -> bool:
-        return bool(
-            self.conflicted_files(echo=False)
+    def has_conflict_markers(self) -> bool:
+        """
+        Verifica se ainda existem marcadores de conflito
+        no conteúdo que está no índice.
+
+        O Git pode considerar um conflito resolvido depois
+        de `git add`, mesmo que o aluno tenha apenas marcado
+        o arquivo sem remover <<<<<<< e >>>>>>>.
+        """
+        result = self.run(
+            "grep",
+            "--cached",
+            "-n",
+            "-E",
+            r"^(<<<<<<<|>>>>>>>)",
+            check=False,
+            capture_output=True,
+            echo=False,
         )
+
+        if result.returncode == 1:
+            return False
+
+        if result.returncode != 0:
+            raise GitError(
+                "Não foi possível verificar os "
+                "marcadores de conflito."
+            )
+
+        return bool(result.stdout.strip())
+
+    def conflict_marker_files(self) -> list[str]:
+        """
+        Retorna os arquivos staged que ainda possuem
+        marcadores de conflito.
+        """
+        result = self.run(
+            "grep",
+            "--cached",
+            "-l",
+            "-E",
+            r"^(<<<<<<<|>>>>>>>)",
+            check=False,
+            capture_output=True,
+            echo=False,
+        )
+
+        if result.returncode == 1:
+            return []
+
+        if result.returncode != 0:
+            raise GitError(
+                "Não foi possível verificar os "
+                "marcadores de conflito."
+            )
+
+        return [
+            file
+            for file in result.stdout.splitlines()
+            if file.strip()
+        ]
 
     def finish_merge(self) -> None:
         self.run("add", "-A")
+
+        marker_files = self.conflict_marker_files()
+
+        if marker_files:
+            raise GitError(
+                "Ainda existem marcadores de conflito "
+                "nos seguintes arquivos:\n"
+                + "\n".join(
+                    f"  - {file}"
+                    for file in marker_files
+                )
+                + "\n\n"
+                "Remova os marcadores <<<<<<<, ======= "
+                "e >>>>>>>, resolva os conflitos e execute "
+                "`git add -A` novamente."
+            )
+
         self.run("commit", "--no-edit")
 
     # --------------------------------------------------------
