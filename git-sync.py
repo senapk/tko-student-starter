@@ -146,7 +146,11 @@ class GitRepository:
         capture_output: bool = False,
         color: bool = False,
     ) -> subprocess.CompletedProcess[str]:
-        command = [self.executable, "--no-pager", *args]
+        command = [
+            self.executable,
+            "--no-pager",
+            *args,
+        ]
 
         display_command = " ".join(command)
 
@@ -180,7 +184,11 @@ class GitRepository:
                 )
 
         if check and result.returncode != 0:
-            stderr = result.stderr.strip() if result.stderr else None
+            stderr = (
+                result.stderr.strip()
+                if result.stderr
+                else None
+            )
 
             if stderr:
                 raise GitError(
@@ -432,6 +440,25 @@ class GitRepository:
         )
 
         return result.returncode == 0
+
+    def contains_remote_branch(
+        self,
+        branch: str,
+        remote: str = REMOTE,
+    ) -> bool:
+        """
+        Verifica se o HEAD local contém o commit apontado
+        atualmente pelo remote-tracking branch.
+
+        Isso garante que um push normal não tente enviar
+        uma história que ainda esteja atrás do servidor.
+        """
+        return self.succeeds(
+            "merge-base",
+            "--is-ancestor",
+            f"{remote}/{branch}",
+            "HEAD",
+        )
 
     # --------------------------------------------------------
     # Push
@@ -819,10 +846,12 @@ class SyncApplication:
                 "não resolvidos."
             )
 
+        # Garante que qualquer alteração resolvida
+        # esteja no índice antes de concluir o merge.
+        self.repository.stage_all()
+
         if self.repository.has_staged_changes():
-            self.repository.commit(
-                "resolve merge conflicts"
-            )
+            self.repository.commit_merge()
 
         self.console.success(
             "Conflitos resolvidos"
@@ -837,6 +866,9 @@ class SyncApplication:
         Finaliza um merge iniciado anteriormente,
         desde que os conflitos já tenham sido
         resolvidos manualmente.
+
+        Normalmente conflitos pendentes já foram
+        detectados por check_pending_conflicts().
         """
 
         if not self.repository.is_merge_in_progress():
@@ -846,8 +878,6 @@ class SyncApplication:
             "Merge pendente detectado"
         )
 
-        # Proteção adicional. Em condições normais,
-        # check_pending_conflicts() já detectou isso.
         if self.repository.has_conflicts():
             self.show_unresolved_conflicts()
             raise UserCancelled
@@ -942,6 +972,20 @@ class SyncApplication:
             )
             return
 
+        # O remote-tracking branch foi atualizado pelo
+        # fetch realizado nesta execução. Se ele ainda não
+        # for ancestral de HEAD, não podemos fazer push
+        # sem uma nova sincronização.
+        if not self.repository.contains_remote_branch(
+            branch
+        ):
+            raise GitError(
+                "O repositório local ainda não contém "
+                "todas as alterações do servidor. "
+                "Execute o programa novamente para "
+                "sincronizar as alterações."
+            )
+
         self.repository.push(branch)
 
         self.console.success(
@@ -983,59 +1027,34 @@ class SyncApplication:
             f"{BOLD}SYNC EDUCACIONAL GIT{RESET}"
         )
 
-        # ----------------------------------------------------
         # 1. Ambiente
-        # ----------------------------------------------------
-
         self.validate_environment()
         self.validate_remote()
 
-        # ----------------------------------------------------
-        # 2. IMPORTANTE:
-        #    não iniciar operações se já houver
+        # 2. Não iniciar operações se já houver
         #    conflitos pendentes.
-        # ----------------------------------------------------
-
         self.check_pending_conflicts()
 
-        # ----------------------------------------------------
         # 3. Configuração
-        # ----------------------------------------------------
-
         self.setup_git_identity()
 
         branch = self.validate_branch()
 
         self.show_status()
 
-        # ----------------------------------------------------
-        # 4. Finalizar merge previamente resolvido
-        # ----------------------------------------------------
-
+        # 4. Finalizar merge previamente resolvido.
         self.handle_pending_merge()
 
-        # ----------------------------------------------------
-        # 5. Salvar alterações locais
-        # ----------------------------------------------------
-
+        # 5. Salvar alterações locais.
         self.commit_local_changes()
 
-        # ----------------------------------------------------
-        # 6. Atualizar a partir do servidor
-        # ----------------------------------------------------
-
+        # 6. Atualizar a partir do servidor.
         self.sync_with_remote(branch)
 
-        # ----------------------------------------------------
-        # 7. Enviar alterações
-        # ----------------------------------------------------
-
+        # 7. Enviar alterações.
         self.push_changes(branch)
 
-        # ----------------------------------------------------
-        # 8. Finalização
-        # ----------------------------------------------------
-
+        # 8. Finalização.
         self.show_final_summary()
 
         self.console.write(
