@@ -146,7 +146,7 @@ class GitRepository:
         capture_output: bool = False,
         color: bool = False,
     ) -> subprocess.CompletedProcess[str]:
-        command = [self.executable, *args]
+        command = [self.executable, "--no-pager", *args]
 
         display_command = " ".join(command)
 
@@ -155,6 +155,7 @@ class GitRepository:
         if color:
             command = [
                 self.executable,
+                "--no-pager",
                 "-c",
                 "color.ui=always",
                 *args,

@@ -1,4 +1,9 @@
 {
   "python.analysis.typeCheckingMode": "strict",
-  "python.analysis.diagnosticMode": "workspace"
+  "python.analysis.diagnosticMode": "workspace",
+  "files.exclude": {
+    "**/.*": true,
+    "CONTRIBUTING.md": true,
+    "LICENSE": true
+  }
 }
