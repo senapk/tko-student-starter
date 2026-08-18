@@ -1,9 +1,5 @@
 ---
-<<<<<<< HEAD
 nomeAluno: "Seu nome completo"
-=======
-nomeAluno: "Seu nome completo - versão remota"
->>>>>>> origin/main
 matricula: "Digite sua matrícula"
 ---
 

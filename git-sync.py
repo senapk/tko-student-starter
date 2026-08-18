@@ -343,25 +343,29 @@ class GitRepository:
             if file.strip()
         ]
 
+    def ensure_no_staged_conflict_markers(self) -> None:
+        marker_files = self.conflict_marker_files()
+
+        if not marker_files:
+            return
+
+        raise GitError(
+            "Ainda existem marcadores de conflito "
+            "nos seguintes arquivos:\n"
+            + "\n".join(
+                f"  - {file}"
+                for file in marker_files
+            )
+            + "\n\n"
+            "Remova os marcadores <<<<<<<, ======= "
+            "e >>>>>>>, resolva os conflitos e execute "
+            "o script novamente."
+        )
+
     def finish_merge(self) -> None:
         self.run("add", "-A")
 
-        marker_files = self.conflict_marker_files()
-
-        if marker_files:
-            raise GitError(
-                "Ainda existem marcadores de conflito "
-                "nos seguintes arquivos:\n"
-                + "\n".join(
-                    f"  - {file}"
-                    for file in marker_files
-                )
-                + "\n\n"
-                "Remova os marcadores <<<<<<<, ======= "
-                "e >>>>>>>, resolva os conflitos e execute "
-                "`git add -A` novamente."
-            )
-
+        self.ensure_no_staged_conflict_markers()
         self.run("commit", "--no-edit")
 
     # --------------------------------------------------------
@@ -640,13 +644,13 @@ class SyncApplication:
 
         self.console.write(
             f"{YELLOW}[AVISO]{RESET} Resolva os conflitos:\n"
-            f"Opção 1: Editar cada arquivo, remover os marcadores de conflito e depois executar\n"
-            f"    {GREEN}git add -A && git commit --no-edit{RESET}\n"
+            f"Opção 1: Editar cada arquivo e remover os marcadores de conflito.\n"
             f"Opção 2: MANTER    as versões locais e DESCARTAR as remotas:\n"
-            f"    {GREEN}git checkout --ours -- . && git add -A && git commit --no-edit{RESET}\n"
+            f"    {GREEN}git checkout --ours -- .{RESET}\n"
             f"Opção 3: DESCARTAR as versões locais e MANTER    as remotas:\n"
-            f"    {GREEN}git checkout --theirs -- . && git add -A && git commit --no-edit{RESET}\n"
-            f"Após isso, rode o script novamente\n"
+            f"    {GREEN}git checkout --theirs -- .{RESET}\n"
+            "Após resolver os conflitos, rode o script novamente. "
+            "Ele fará o git add -A e finalizará o merge automaticamente.\n"
         )
 
     def handle_pending_merge(self) -> None:
@@ -798,6 +802,8 @@ class SyncApplication:
                 "Nenhuma alteração pronta para commit."
             )
             return
+
+        self.repository.ensure_no_staged_conflict_markers()
 
         self.console.warn(
             "Resumo das alterações:"
