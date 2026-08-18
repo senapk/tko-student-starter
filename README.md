@@ -1,5 +1,5 @@
 ---
-nomeAluno: "Seu nome completo"
+nomeAluno: "Seu nome completo - versão remota"
 matricula: "Digite sua matrícula"
 ---
 
