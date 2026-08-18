@@ -14,7 +14,7 @@ Repositório base do aluno para uso com o TKO: https://github.com/senapk/tko.
 Este projeto foi preparado para uso em ambiente Git e possui dois scripts principais:
 
 - `setup.sh`: prepara o ambiente de desenvolvimento no Ubuntu ou Codespaces, com execução manual pelo aluno.
-- `git-sync.sh`: padroniza o fluxo de sincronização do repositório do aluno (commit, pull/merge e push).
+- `git-sync.py`: padroniza o fluxo de sincronização do repositório do aluno (commit, pull/merge e push).
 
 ## O que este starter resolve
 
@@ -31,7 +31,7 @@ Se você quer começar em poucos minutos:
 1. Abra o projeto no Codespaces ou em um Ubuntu local.
 2. Execute `./setup.sh` e escolha a opção desejada.
 3. Faça suas atividades normalmente.
-4. Execute `./git-sync.sh` para sincronizar suas alterações.
+4. Execute `./git-sync.py` para sincronizar suas alterações.
 
 ## Objetivo deste repositório 
 
@@ -79,7 +79,7 @@ Quando usar:
 - Atualização das ferramentas do curso.
 - Mudança de linguagem principal do semestre (Python, TypeScript ou Go).
 
-## git-sync.sh (sincronização Git do aluno) <!-- @git-syncsh-sincronização-git-do-aluno deps=none factor=1 xpgoal=0 active=1 -->
+## git-sync.py (sincronização Git do aluno) 
 
 Script de sincronização com foco educacional para manter o repositório organizado e atualizado.
 
@@ -96,7 +96,7 @@ Principais responsabilidades:
 Uso:
 
 ```bash
-./git-sync.sh
+./git-sync.py
 ```
 
 Quando usar:
@@ -105,63 +105,6 @@ Quando usar:
 - Antes de encerrar uma sessão de trabalho.
 - Sempre que quiser reduzir risco de divergência com o remoto.
 
-
-```txt
-                         INÍCIO
-                            │
-                            ▼
-                 É um repositório Git?
-                            │
-                            ▼
-                 Existem conflitos U?
-                    /               \
-                  SIM               NÃO
-                   │                 │
-                   ▼                 ▼
-             Lista arquivos      continua
-                   │                 │
-                   ▼                 ▼
-                ENCERRA       fetch origin
-                                     │
-                                     ▼
-                            Há alterações remotas?
-                              /              \
-                            NÃO              SIM
-                             │                │
-                             ▼                ▼
-                          continua       confirmação
-                                              │
-                                              ▼
-                                      tenta fast-forward
-                                        /           \
-                                      OK            falha
-                                       │              │
-                                       ▼              ▼
-                                   continua      tenta merge
-                                                     │
-                                             ┌───────┴───────┐
-                                             │               │
-                                           OK              conflito
-                                             │               │
-                                             ▼               ▼
-                                          continua       1 / 2 / 3
-                                                           │
-                              ┌────────────────┬────────────┤
-                              │                │            │
-                           LOCAL           REMOTO       MANUAL
-                              │                │            │
-                              ▼                ▼            ▼
-                          checkout         checkout      lista
-                           --ours          --theirs      arquivos
-                              │                │            │
-                              └───────┬────────┘            ▼
-                                      │                  ENCERRA
-                                      ▼
-                                    commit
-                                      │
-                                      ▼
-                                    push
-``` 
 
 ## Setup local (máquina própria)
 
@@ -198,7 +141,7 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 
 1. Faça setup do ambiente com `./setup.sh`.
 2. Desenvolva suas atividades normalmente.
-3. Sincronize com o remoto usando `./git-sync.sh` ao finalizar uma etapa.
+3. Sincronize com o remoto usando `.py` ao finalizar uma etapa.
 
 ## Fluxo do aluno
 
@@ -206,7 +149,7 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 2. Configure o ambiente com `./setup.sh`.
 3. Resolva a atividade no diretório do projeto.
 4. Revise suas alterações.
-5. Execute `./git-sync.sh`.
+5. Execute `./git-sync.py`.
 6. Confirme no GitHub se o envio foi concluído.
 
 ## Checklist antes de sincronizar
@@ -214,14 +157,14 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 1. Rode e valide seus testes locais (quando existirem).
 2. Revise os arquivos alterados e remova artefatos temporários.
 3. Confirme se está na branch `main`.
-4. Execute `./git-sync.sh`.
+4. Execute `./git-sync.py`.
 5. Verifique no GitHub se o commit foi enviado corretamente.
 
 ## Observações
 
 - Mantenha os campos do frontmatter no topo deste arquivo atualizados (`nomeAluno` e `matricula`).
-- Execute os scripts com permissão de execução (`chmod +x setup.sh git-sync.sh`) caso necessário.
-- Em caso de conflitos Git, o `git-sync.sh` oferece caminhos guiados de resolução.
+- Execute os scripts com permissão de execução (`chmod +x setup.sh git-sync.py`) caso necessário.
+- Em caso de conflitos Git, o `git-sync.py` oferece caminhos guiados de resolução.
 
 ## Dúvidas frequentes
 
@@ -231,7 +174,7 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
   - Não. O fluxo oficial é manual, inclusive no Codespaces, para evitar comportamentos inesperados entre sistemas diferentes.
 - O `setup.sh` instala tudo de uma vez?
   - Não. Ele é interativo e permite escolher o tipo de configuração desejada.
-- O `git-sync.sh` substitui o Git?
+- O `git-sync.py` substitui o Git?
   - Não. Ele apenas organiza e simplifica o fluxo mais comum de sincronização.
 - Posso trabalhar fora da branch `main`?
   - O fluxo atual do script foi deliberadamente restringido à branch `main`.
@@ -239,10 +182,10 @@ Isso evita inicializações automáticas inesperadas e mantém o comportamento a
 ## Solução de problemas comuns 
 
 - Erro de permissão ao executar script:
-  - Rode `chmod +x setup.sh git-sync.sh` e tente novamente.
+  - Rode `chmod +x setup.sh git-sync.py` e tente novamente.
 - `pipx` não encontrado:
   - Instale o `pipx`, execute `pipx ensurepath` e reinicie o terminal.
-- `git-sync.sh` recusando branch:
+- `git-sync.py` recusando branch:
   - O fluxo é intencionalmente restrito à branch `main`.
 - Falha de autenticação com GitHub:
   - Revise chave SSH, `origin` do repositório e permissões de acesso.
