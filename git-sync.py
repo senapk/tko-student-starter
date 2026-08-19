@@ -492,6 +492,7 @@ class GitRepository:
     ) -> bool:
         result = self.run(
             "merge",
+            "--no-edit",
             remote_branch,
             check=False,
         )
