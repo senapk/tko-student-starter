@@ -72,10 +72,10 @@ def show_menu() -> None:
 Digite o número do elemento que deseja instalar/atualizar:
 
   1) {GREEN}tko        {RESET}Instala/atualiza o TKO (via pipx)
-  2) {GREEN}scripts    {RESET}Atualiza git-sync.py e setup.py
+  2) {GREEN}scripts    {RESET}Atualiza git-sync.py e setup.py 
   3) {GREEN}python     {RESET}Configura análise Python no workspace
   4) {GREEN}c          {RESET}Configura ambiente C/C++ (via apt/WSL)
-  5) {GREEN}typescript {RESET}Instala TypeScript, esbuild e dependências
+  5) {GREEN}typescript {RESET}Instala TypeScript, esbuild e dependências (via npm)
   6) {GREEN}go         {RESET}Instala Go no sistema (LINUX/WSL)
   7) {GREEN}java       {RESET}Configura ambiente Java (via apt/WSL)
 """
